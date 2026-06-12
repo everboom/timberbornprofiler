@@ -98,3 +98,7 @@ TimberbornProfiler.slnx
     ├── FrameDriver.cs            per-frame LateUpdate flush heartbeat
     ├── ProfilerConfig.cs / ProfilerPaths.cs / ProfilerLog.cs
 ```
+
+## License
+
+[MIT](LICENSE) © 2026 Erik Verboom.
