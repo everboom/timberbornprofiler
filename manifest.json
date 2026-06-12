@@ -1,0 +1,13 @@
+{
+  "Name": "Timberborn Profiler",
+  "Version": "0.1.0.0",
+  "Id": "SylvanGames.TimberbornProfiler",
+  "MinimumGameVersion": "1.1.0.0",
+  "Description": "In-game CPU profiler overlay (Alt+Shift+P). On demand, scans loaded mod assemblies, Harmony-patches their tick/update methods, and shows avg/p99/max cost grouped per assembly and per class. Optionally includes vanilla code.",
+  "RequiredMods": [
+    {
+      "Id": "Harmony",
+      "MinimumVersion": "2.3.3"
+    }
+  ]
+}

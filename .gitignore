@@ -1,0 +1,9 @@
+# Build output
+bin/
+obj/
+
+# Machine-specific build config
+Directory.Build.local.props
+
+# Player.log copies / scratch
+dump/

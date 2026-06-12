@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>SylvanGames.TimberbornProfiler</RootNamespace>
+    <AssemblyName>SylvanGames.TimberbornProfiler</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <!--
+    Harmony for runtime patching. Compile-only: the runtime DLL is provided
+    by the player's installed Harmony mod (declared in manifest.json
+    RequiredMods), so we don't bundle it.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Lib.Harmony" Version="2.3.3">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!--
+    Game / engine references resolved from the local Timberborn install.
+    NOT redistributed (Private=false) — Timberborn provides them at load time.
+    The profiled mods' types are resolved by name at runtime, never referenced
+    at compile time.
+  -->
+  <ItemGroup Label="Timberborn DLLs">
+    <Reference Include="$(TimberbornManagedDir)\Timberborn.*.dll">
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Label="Unity engine DLLs">
+    <Reference Include="$(TimberbornManagedDir)\UnityEngine.dll;$(TimberbornManagedDir)\UnityEngine.*Module.dll">
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+  </ItemGroup>
+
+  <!--
+    UI / DI / input DLLs the wildcards above miss: Bindito.Core (the DI
+    Configurator / [Context] used to register the window into the Game scope)
+    and Unity.InputSystem (legacy UnityEngine.Input is disabled in Timberborn,
+    so the keybind reads Keyboard.current).
+  -->
+  <ItemGroup Label="UI / DI / input DLLs">
+    <Reference Include="$(TimberbornManagedDir)\Bindito.Core.dll;$(TimberbornManagedDir)\Unity.InputSystem.dll">
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="ValidateTimberbornInstall" BeforeTargets="ResolveAssemblyReferences">
+    <Error
+      Condition="'$(TimberbornInstallDir)' == ''"
+      Text="TimberbornInstallDir is not set. Copy Directory.Build.local.props.example to Directory.Build.local.props and set your install path, or set the PROFILER_TIMBERBORN_DIR environment variable, or pass -p:TimberbornInstallDir=&lt;path&gt;." />
+    <Error
+      Condition="'$(TimberbornInstallDir)' != '' AND !Exists('$(TimberbornManagedDir)')"
+      Text="Timberborn Managed directory not found at '$(TimberbornManagedDir)'. Check that TimberbornInstallDir ('$(TimberbornInstallDir)') points at the root of your Timberborn install (the folder containing Timberborn_Data\Managed\)." />
+  </Target>
+
+  <!--
+    After build, drop the mod DLL + manifest.json into the user's Timberborn
+    Mods folder so the game picks it up on next launch. Disable with
+    -p:ProfilerDeploy=false.
+
+    config.json is deployed only if absent, so editing the deployed copy
+    survives a rebuild.
+  -->
+  <Target Name="DeployProfiler" AfterTargets="Build" Condition="'$(ProfilerDeploy)' != 'false'">
+    <ItemGroup>
+      <_ProfilerDeployFile Include="$(TargetDir)SylvanGames.TimberbornProfiler.dll" />
+      <_ProfilerDeployFile Include="$(MSBuildThisFileDirectory)..\..\manifest.json" />
+    </ItemGroup>
+    <MakeDir Directories="$(ProfilerDeployDir)" />
+    <Copy SourceFiles="@(_ProfilerDeployFile)" DestinationFolder="$(ProfilerDeployDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\..\config.json"
+          DestinationFolder="$(ProfilerDeployDir)"
+          Condition="!Exists('$(ProfilerDeployDir)\config.json')" />
+    <Message Text="TimberbornProfiler deployed to $(ProfilerDeployDir)" Importance="high" />
+  </Target>
+
+</Project>

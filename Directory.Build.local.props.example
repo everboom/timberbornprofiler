@@ -1,0 +1,21 @@
+<Project>
+
+  <!--
+    Template for Directory.Build.local.props. Copy this file to
+    Directory.Build.local.props (gitignored) and edit for your machine.
+
+    Required:
+      TimberbornInstallDir  — root of your Timberborn install. Must contain
+                              Timberborn_Data\Managed\ with the game DLLs.
+
+    Optional:
+      ProfilerDeployDir     — where the build copies the mod DLL + manifest.
+                              Default: %USERPROFILE%\Documents\Timberborn\Mods\TimberbornProfiler
+  -->
+
+  <PropertyGroup>
+    <TimberbornInstallDir>C:\Path\To\Timberborn</TimberbornInstallDir>
+    <!-- <ProfilerDeployDir>C:\Custom\Mods\TimberbornProfiler</ProfilerDeployDir> -->
+  </PropertyGroup>
+
+</Project>

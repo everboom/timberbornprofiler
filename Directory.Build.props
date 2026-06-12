@@ -1,0 +1,49 @@
+<Project TreatAsLocalProperty="Configuration">
+
+  <!--
+    Repository-wide MSBuild defaults for TimberbornProfiler (a standalone
+    in-game CPU profiler mod for Timberborn).
+
+    Override mechanism for the Timberborn install path (no committed default —
+    the path is machine-specific and stays out of git):
+      1. Pass -p:TimberbornInstallDir=<path> on the dotnet command line.
+      2. Set PROFILER_TIMBERBORN_DIR (or DEVKIT_TIMBERBORN_DIR /
+         KEYSTONE_TIMBERBORN_DIR) env var.
+      3. Create Directory.Build.local.props (gitignored — copy from
+         Directory.Build.local.props.example) and set TimberbornInstallDir.
+
+    Resolution order is highest-precedence first; the first non-empty value wins.
+
+    Optional: PROFILER_DEPLOY_DIR redirects the post-build deploy somewhere
+    other than %USERPROFILE%\Documents\Timberborn\Mods\TimberbornProfiler.
+  -->
+
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.local.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.local.props')" />
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- Force Release for every build, regardless of what -c is passed: the
+       deployed Mods folder is what the running game JITs. -->
+  <PropertyGroup>
+    <Configuration>Release</Configuration>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Timberborn paths">
+    <TimberbornInstallDir Condition="'$(TimberbornInstallDir)' == '' AND '$(PROFILER_TIMBERBORN_DIR)' != ''">$(PROFILER_TIMBERBORN_DIR)</TimberbornInstallDir>
+    <TimberbornInstallDir Condition="'$(TimberbornInstallDir)' == '' AND '$(DEVKIT_TIMBERBORN_DIR)' != ''">$(DEVKIT_TIMBERBORN_DIR)</TimberbornInstallDir>
+    <TimberbornInstallDir Condition="'$(TimberbornInstallDir)' == '' AND '$(KEYSTONE_TIMBERBORN_DIR)' != ''">$(KEYSTONE_TIMBERBORN_DIR)</TimberbornInstallDir>
+    <TimberbornManagedDir Condition="'$(TimberbornInstallDir)' != ''">$(TimberbornInstallDir)\Timberborn_Data\Managed</TimberbornManagedDir>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Mod deploy paths">
+    <ProfilerDeployDir Condition="'$(ProfilerDeployDir)' == '' AND '$(PROFILER_DEPLOY_DIR)' != ''">$(PROFILER_DEPLOY_DIR)</ProfilerDeployDir>
+    <ProfilerDeployDir Condition="'$(ProfilerDeployDir)' == ''">$(USERPROFILE)\Documents\Timberborn\Mods\TimberbornProfiler</ProfilerDeployDir>
+  </PropertyGroup>
+
+</Project>
